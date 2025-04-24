@@ -56,7 +56,7 @@ const UserSchema = new Schema(
 // and this keyword is used to access the current document and here i want to access that userSchema and modified that before saving ,here we are using function keyword
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
