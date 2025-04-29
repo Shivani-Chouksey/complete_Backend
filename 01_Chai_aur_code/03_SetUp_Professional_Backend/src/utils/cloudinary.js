@@ -8,7 +8,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinar = async (localFilePath) => {
+const uploadOnCloudinar = async (
+  localFilePath,
+  folderName = "default_folder"
+) => {
   try {
     if (!localFilePath) {
       throw new Error("No file path provided");
@@ -16,9 +19,11 @@ const uploadOnCloudinar = async (localFilePath) => {
     //upload file to cloudinary
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
+      folder: folderName, // Specify the folder name in Cloudinary
     });
     // file is uploaded on cloudinary
     console.log("File uploaded successfully", response.url);
+    fs.unlinkSync(localFilePath); // Delete the local file after upload
     return response;
   } catch (error) {
     console.error("Error uploading file to Cloudinary:", error.message);
