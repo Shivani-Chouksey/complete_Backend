@@ -8,7 +8,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await UserModel.findById(userId);
     const accessToken = user.generateAcessToken();
-    const refreshToken = user.refreshToken();
+    const refreshToken = user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -108,18 +108,21 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 /* Login Controller  */
+//get data from body
+//check username and email
+//find the user in DB
+//check for password
+// create acccess and refresh token
+//send cookie
+//send response to frontend
 const loginUser = asyncHandler(async (req, res) => {
-  //get data from body
-  //check username and email
-  //find the user in DB
-  //check for password
-  // create acccess and refresh token
-  //send cookie
-  //send response to frontend
   const { email, username, password } = req.body;
-  if (!username || !email) {
+  if (!(username || email)) {
     throw new ApiError(400, "Username and email are required");
   }
+  // if (!username || !email) {
+  //   throw new ApiError(400, "Username and email are required");
+  // }
 
   const ExistingUser = await UserModel.findOne({
     $or: [{ email }, { username }],
@@ -134,8 +137,8 @@ const loginUser = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     ExistingUser._id
   );
-  console.log("accessToken", accessToken);
-  console.log("refreshToken", refreshToken);
+  // console.log("accessToken", accessToken);
+  // console.log("refreshToken", refreshToken);
 
   const loggedInUser = await UserModel.findById(ExistingUser._id).select(
     "-password -refreshToken"
@@ -163,11 +166,15 @@ const loginUser = asyncHandler(async (req, res) => {
 /* Logout User */
 const logOutUser = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  await UserModel.findByIdAndUpdate(
-    userId,
-    { $set: { refreshToken: undefined } },
-    { new: true }
-  );
+  // const user = await UserModel.findByIdAndUpdate(
+  //   userId,
+  //   { $set: { refreshToken: undefined } },
+  //   { new: true }
+  // );
+
+  const user = await UserModel.findById(userId);
+  user.refreshToken = undefined;
+  await user.save({ validateBeforeSave: false });
 
   // Set the refresh token as a cookie in the response
   const cookieOptions = {
