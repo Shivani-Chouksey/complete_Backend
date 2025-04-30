@@ -188,6 +188,7 @@ const logOutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User Logged Out Successfully"));
 });
 
+//refresh access token
 const refreshAccessToken = asyncHandler(async (req, res) => {
   try {
     const incomingRefreshToken =
@@ -230,4 +231,128 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, logOutUser, refreshAccessToken };
+// Change Current User Password
+const changeCurrentUserPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(400, "Old and New Password are required");
+  }
+  const userId = req.user?._id;
+  const user = await UserModel.findById(userId);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+  if (!isPasswordValid) {
+    throw new ApiError(400, "Invalid Old Password");
+  }
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password Changed Successfully"));
+});
+
+// Get Current User
+const currentUser = asyncHandler(async (req, res) => {
+  res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "Current User Fetched Successfully"));
+});
+
+//make seprate endpoint for file update -  professional approach
+//update account details
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { fullname, username, email } = req.body;
+  if (!fullname || !email) {
+    throw new ApiError(400, "All are required");
+  }
+  const userId = req.user._id;
+  const updatedUser = UserModel.findByIdAndUpdate(
+    userId,
+    { $set: { fullname, email: email } },
+    { new: true }
+  ).select("-password -refreshToken"); //  {new:true} will return the updated user object
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedUser, "Account Detail Updated  Successfully")
+    );
+});
+
+//update avatar
+//make seprate endpoint for file update -  professional approach
+const updateAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar File is required");
+  }
+
+  const avatar = await uploadOnCloudinar(
+    avatarLocalPath,
+    `chai_backend/user/${req.user.email}/avatar`
+  );
+  if (!avatar.url) {
+    throw new ApiError(400, "Error while uplaoding avatar");
+  }
+
+  const userId = req.user._id;
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $set: { avatar: avatar.url },
+    },
+    { new: true }
+  ).select("-password -refreshToken"); //  {new:true} will return the updated user object
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "Avatar Updated  Successfully"));
+});
+
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+  const coverLocalPath = req.file?.path;
+  if (!coverLocalPath) {
+    throw new ApiError(400, "Cover Image File is required");
+  }
+
+  const coverImage = await uploadOnCloudinar(
+    coverLocalPath,
+    `chai_backend/user/${req.user.email}/cover_image`
+  );
+  if (!coverImage.url) {
+    throw new ApiError(400, "Error while uplaoding Cover Image");
+  }
+
+  const userId = req.user._id;
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $set: { coverImage: coverImage.url },
+    },
+    { new: true }
+  ).select("-password -refreshToken"); //  {new:true} will return the updated user object
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedUser, "Cover Image Updated  Successfully")
+    );
+});
+
+export {
+  registerUser,
+  loginUser,
+  logOutUser,
+  refreshAccessToken,
+  changeCurrentUserPassword,
+  currentUser,
+  updateAccountDetails,
+  updateAvatar,
+  updateUserCoverImage,
+};
