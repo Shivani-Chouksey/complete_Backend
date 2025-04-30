@@ -32,4 +32,33 @@ const uploadOnCloudinar = async (
   }
 };
 
-export { uploadOnCloudinar };
+const deleteFromCloudinary = async (fileUrl) => {
+  try {
+    if (!fileUrl) {
+      throw new Error("No file path provided");
+    }
+    // Extract public ID from Cloudinary file URL
+    const pathWithVersion = fileUrl.split("/upload/")[1];
+    const cloudinaryFilePath = pathWithVersion
+      .split("/")
+      .slice(1)
+      .join("/")
+      .split(".")[0];
+    console.log(
+      "cloudinaryFilePath inside cloudinary utils--->",
+      cloudinaryFilePath
+    );
+
+    //remove file from cloudinary
+    const response = await cloudinary.uploader.destroy(cloudinaryFilePath, {
+      resource_type: "auto",
+    });
+    console.log("File deleted Response from cloudinary ", response);
+    return response;
+  } catch (error) {
+    console.error("Error deleting file from Cloudinary:", error.message);
+    throw error; // Rethrow the error to be handled by the caller
+  }
+};
+
+export { uploadOnCloudinar, deleteFromCloudinary };

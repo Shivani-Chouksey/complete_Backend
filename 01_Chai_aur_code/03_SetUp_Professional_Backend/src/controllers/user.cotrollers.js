@@ -1,7 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { UserModel } from "../models/user.model.js";
-import { uploadOnCloudinar } from "../utils/cloudinary.js";
+import {
+  deleteFromCloudinary,
+  uploadOnCloudinar,
+} from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 const generateAccessAndRefreshToken = async (userId) => {
@@ -294,7 +297,9 @@ const updateAvatar = asyncHandler(async (req, res) => {
   }
 
   //TODO-  utility for  Delete previous avatar from cloudinary
-
+  if (req.user.avatar) {
+    await deleteFromCloudinary(req.user.avatar);
+  }
   const avatar = await uploadOnCloudinar(
     avatarLocalPath,
     `chai_backend/user/${req.user.email}/avatar`
