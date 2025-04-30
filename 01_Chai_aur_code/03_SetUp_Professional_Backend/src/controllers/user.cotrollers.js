@@ -263,12 +263,12 @@ const currentUser = asyncHandler(async (req, res) => {
 //make seprate endpoint for file update -  professional approach
 //update account details
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { fullname, username, email } = req.body;
+  const { fullname, email } = req.body;
   if (!fullname || !email) {
     throw new ApiError(400, "All are required");
   }
   const userId = req.user._id;
-  const updatedUser = UserModel.findByIdAndUpdate(
+  const updatedUser = await UserModel.findByIdAndUpdate(
     userId,
     { $set: { fullname, email: email } },
     { new: true }
@@ -292,6 +292,8 @@ const updateAvatar = asyncHandler(async (req, res) => {
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar File is required");
   }
+
+  //TODO-  utility for  Delete previous avatar from cloudinary
 
   const avatar = await uploadOnCloudinar(
     avatarLocalPath,
