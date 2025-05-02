@@ -48,6 +48,7 @@ This repository contains multiple backend projects for different use cases, incl
 ````bash
 cd 01_Chai_aur_code/03_SetUp_Professional_Backend
 
+
 3.Install dependencies:
 ```bash
 npm install
@@ -59,15 +60,18 @@ npm run dev
 
 
 
+````
+
+## MongoDB Agreegation Pipeline and subPipeline
+
 ## Technologies Used
+
 Backend Framework: Express.js
 Database: MongoDB
 Authentication: JWT
 File Uploads: Multer, Cloudinary
 Environment Management: dotenv
 
-
-
 ## Author
+
 Shivani Chouksey
-````
