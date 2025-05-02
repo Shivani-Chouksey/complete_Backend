@@ -7,6 +7,7 @@ import {
 } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await UserModel.findById(userId);
@@ -353,7 +354,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     );
 });
 
-/* Agreegation pipeline */
+/* Agreegation pipeline -user channel profile*/
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const username = req.params.username;
   if (!username?.trim()) {
@@ -447,6 +448,62 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     .json(200, response[0], "User Channel Profile Fetched Successfully");
 });
 
+/*Agreegation Sub Pipeline -user watch history   */
+const getUserWatchHistory = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  // 1. match the user by id
+  // 2. lookup the user by id in watchHistory collection
+  // 3. videos - channels that user has watched
+  // 4. lookup the user by id in videos collection
+
+  const user = await UserModel.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullname: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(200, user[0].watchHistory, "User Watch History Fetched Successfully");
+});
+
 export {
   registerUser,
   loginUser,
@@ -458,4 +515,5 @@ export {
   updateAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
+  getUserWatchHistory,
 };
