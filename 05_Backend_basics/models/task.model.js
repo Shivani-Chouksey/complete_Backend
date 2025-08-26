@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema({
-    tittle: {
+    title: {
         type: String,
-        require: [true, 'Tittle Is Required']
+        require: [true, 'Title Is Required'],
+        trim:true
     },
     description: {
         type: String,
@@ -17,6 +18,7 @@ const taskSchema = new mongoose.Schema({
     priority: {
         type: String,
         enum: ['low', 'high', 'medium'],
+        default:'high'
     },
 
 

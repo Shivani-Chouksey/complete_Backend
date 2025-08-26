@@ -1,0 +1,122 @@
+[
+  {
+    "title": "System Upgrade",
+    "description": "Upgrade server OS to latest version.",
+    "status": "pending",
+    "priority": "high"
+  },
+  {
+    "title": "Bug Fix #342",
+    "description": "Resolve login issue on mobile app.",
+    "status": "in-progress",
+    "priority": "medium"
+  },
+  {
+    "title": "UI Redesign",
+    "description": "Revamp dashboard layout for better UX.",
+    "status": "complete",
+    "priority": "low"
+  },
+  {
+    "title": "Database Backup",
+    "description": "Schedule weekly backups for production DB.",
+    "status": "pending",
+    "priority": "high"
+  },
+  {
+    "title": "Client Meeting",
+    "description": "Discuss Q3 roadmap with stakeholders.",
+    "status": "pending",
+    "priority": "medium"
+  },
+  {
+    "title": "Security Audit",
+    "description": "Conduct vulnerability scan on APIs.",
+    "status": "in-progress",
+    "priority": "high"
+  },
+  {
+    "title": "Feature Request #128",
+    "description": "Add dark mode to user settings.",
+    "status": "pending",
+    "priority": "low"
+  },
+  {
+    "title": "Performance Review",
+    "description": "Evaluate team KPIs for last quarter.",
+    "status": "complete",
+    "priority": "medium"
+  },
+  {
+    "title": "Code Refactoring",
+    "description": "Clean up legacy code in billing module.",
+    "status": "in-progress",
+    "priority": "medium"
+  },
+  {
+    "title": "API Integration",
+    "description": "Integrate third-party payment gateway.",
+    "status": "pending",
+    "priority": "high"
+  },
+  {
+    "title": "Training Session",
+    "description": "Organize workshop on cloud deployment.",
+    "status": "pending",
+    "priority": "low"
+  },
+  {
+    "title": "Release Planning",
+    "description": "Plan next sprint release cycle.",
+    "status": "complete",
+    "priority": "medium"
+  },
+  {
+    "title": "User Feedback Analysis",
+    "description": "Review feedback from beta testers.",
+    "status": "in-progress",
+    "priority": "low"
+  },
+  {
+    "title": "License Renewal",
+    "description": "Renew software licenses before expiry.",
+    "status": "pending",
+    "priority": "high"
+  },
+  {
+    "title": "Marketing Campaign",
+    "description": "Launch new product awareness campaign.",
+    "status": "pending",
+    "priority": "medium"
+  },
+  {
+    "title": "Server Maintenance",
+    "description": "Perform routine server health checks.",
+    "status": "complete",
+    "priority": "low"
+  },
+  {
+    "title": "Onboarding Process",
+    "description": "Streamline new employee onboarding.",
+    "status": "in-progress",
+    "priority": "medium"
+  },
+  {
+    "title": "Compliance Check",
+    "description": "Ensure GDPR compliance across systems.",
+    "status": "pending",
+    "priority": "high"
+  },
+  {
+    "title": "Design Mockups",
+    "description": "Create mockups for new landing page.",
+    "status": "complete",
+    "priority": "low"
+  },
+  {
+    "title": "Data Migration",
+    "description": "Migrate user data to new platform.",
+    "status": "in-progress",
+    "priority": "high"
+  }
+]
