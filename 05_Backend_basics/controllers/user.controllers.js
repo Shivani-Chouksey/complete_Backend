@@ -4,6 +4,8 @@ import { generateFourDigitOTP } from "../utils/generateOtp.js"
 import { Send_Mail } from "../utils/sendEmail.js"
 
 
+
+
 export const RegisterUser = async (req, res) => {
     try {
         const userexist = await UserModel.findOne({ email: req.body.email })
@@ -34,8 +36,6 @@ export const RegisterUser = async (req, res) => {
     }
 }
 
-
-
 export const VerifyAccount = async (req, res) => {
     try {
         const findExistingUser = await UserModel.findOne({ otp: req.body.otp })
@@ -59,7 +59,6 @@ export const VerifyAccount = async (req, res) => {
         return res.status(500).json({ Success: false, message: "Internal Server Error" })
     }
 }
-
 
 export const ResendOtp = async (req, res) => {
     try {
@@ -91,9 +90,48 @@ export const ResendOtp = async (req, res) => {
         return res.status(500).json({ Success: false, message: "Internal Server Error" })
     }
 }
+
 export const LoginUser = async (req, res) => {
     try {
 
+        const findExistingUser = await UserModel.findOne({ $or: [{ email: req.body.email }, { username: req.body.email }] })
+        if (!findExistingUser) {
+            return res.status(404).json({ Success: false, message: "User Not Found For Generating Otp !" })
+        }
+
+        if (!findExistingUser.isVerified) {
+            return res.status(500).json({ Success: false, message: "Account is Not Verified ,Please Verified Your Acoount  !" })
+
+        }
+        const isPasswordMatch = await findExistingUser.CheckIsPasswordCorrect(req.body.password);
+        if (!isPasswordMatch) {
+            return res.status(500).json({ Success: false, message: "Invalid Credentail !" })
+        }
+
+
+        const access_token = await findExistingUser.generateAcessToken();
+        const refresh_token = await findExistingUser.generateRefreshToken()
+        await UserModel.findByIdAndUpdate(
+            findExistingUser._id,
+            { refresh_token: refresh_token },
+            { new: true, validateModifiedOnly: true } // ✅ only validates changed fields
+        );
+
+        const loggedInUser = await UserModel.findById(findExistingUser._id).select(
+            "-password "
+        );
+
+        const cookie_options = {
+            httpOnly: false,          // ❌ JS can't access (prevents XSS)
+            secure: false,            // ✅ only over HTTPS
+            sameSite: "strict",      // prevents CSRF (use "lax" if mobile app)
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days expiry
+            path: "/api/auth/refresh-token", // only sent for refresh requests
+        }
+        return res.status(200).cookie("refresh-token", refresh_token, cookie_options).json({ Success: true, message: "Logged In Succeddfully", data: loggedInUser })
+
     } catch (error) {
+        return res.status(500).json({ Success: false, message: "Internal Server Error" })
+
     }
 }

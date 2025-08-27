@@ -34,7 +34,7 @@ const userValidationSchema = Joi.object({
 
     otp_expiry: Joi.date().optional(),
 
-    access_token: Joi.string().optional(),
+    // access_token: Joi.string().optional(),
 
     refresh_token: Joi.string().optional(),
 
