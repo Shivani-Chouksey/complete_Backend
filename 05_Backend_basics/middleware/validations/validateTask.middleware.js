@@ -18,7 +18,7 @@ export const ValidateTask = (req, res, next) => {
 
     if (response.error) {
 
-        return res.status(400).json({ error: response.error.details[0].message });
+        return res.status(400).json({ error: response.error.details[0].message, message: "Validation failed", Success:false });
     }
 
     next()
