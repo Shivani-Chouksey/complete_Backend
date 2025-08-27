@@ -1,12 +1,12 @@
 import express from 'express';
 import 'dotenv/config'
 import connectDB from './config/dbConnection.js';
-import TaskRoutes from './routes/task.routes.js'
+import All_routes from './routes/index.js'
 const app = express()
 app.use(express.json())
 
-// all routes
-app.use("/api/v1/task",TaskRoutes)
+// Entry for all routes
+app.use("/api/v1",All_routes)
 
 connectDB()
     .then(() => {
