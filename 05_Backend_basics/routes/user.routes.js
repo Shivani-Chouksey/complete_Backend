@@ -5,17 +5,11 @@ import { AuthenticateUserMiddleware } from '../middleware/authenticate-user.js'
 import { upload } from '../middleware/multer.middleware.js'
 const router=express.Router()
 
-
-router.get('/',(req,res)=>{
- res.send("user Route Wokring")
-})
-
 router.post("/register",ValidateUserReq,RegisterUser);
 router.post("/verify-account",VerifyAccount)
 router.post("/resend-otp",ResendOtp)
 router.post("/login",LoginUser)
 router.get("/refresh-token",RefreshToken)
 router.post("/upload-profile",AuthenticateUserMiddleware,upload.single('upload_profile'),UploadProfileImage)
-// router.post("/upload-profile",AuthenticateUserMiddleware,upload.array('upload_profile'),UploadProfileImage)
 
 export default router
