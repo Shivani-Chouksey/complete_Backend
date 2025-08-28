@@ -1,8 +1,9 @@
 
 import { UserModel } from "../models/user.model.js"
+import { uploadOnCloudinar } from "../utils/cloudinary.js"
 import { generateFourDigitOTP } from "../utils/generateOtp.js"
 import { Send_Mail } from "../utils/sendEmail.js"
-
+import jwt from 'jsonwebtoken'
 
 
 
@@ -126,12 +127,88 @@ export const LoginUser = async (req, res) => {
             secure: false,            // ✅ only over HTTPS
             sameSite: "strict",      // prevents CSRF (use "lax" if mobile app)
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days expiry
-            path: "/api/auth/refresh-token", // only sent for refresh requests
+            path: "/api/v1/user/refresh-token", // only sent for refresh requests
         }
-        return res.status(200).cookie("refresh-token", refresh_token, cookie_options).json({ Success: true, message: "Logged In Succeddfully", data: loggedInUser })
+        return res.status(200).cookie("refresh-token", refresh_token, cookie_options).json({ Success: true, message: "Logged In Succeddfully", data: loggedInUser, access_token: access_token })
 
     } catch (error) {
         return res.status(500).json({ Success: false, message: "Internal Server Error" })
 
+    }
+}
+
+
+
+export const RefreshToken = async (req, res) => {
+    try {
+        const token = req.headers.cookie.replace("refresh-token=", "")
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized ", Success: false })
+        }
+
+        const isVerified = jwt.verify(token, process.env.JWT_SECRET);
+        if (!isVerified) {
+            return res.status(401).json({ message: 'Token Expired' });
+        }
+        console.log("token -->", isVerified, token);
+
+        const findExistingUser = await UserModel.findById(isVerified._id);
+        console.log("findExistingUser -->", findExistingUser);
+
+        if (!findExistingUser) {
+            return res.status(404).json({ Success: false, message: "User Not Found For Generating token !" })
+        }
+
+        const access_token = await findExistingUser.generateAcessToken();
+        const refresh_token = await findExistingUser.generateRefreshToken()
+        await UserModel.findByIdAndUpdate(
+            findExistingUser._id,
+            { refresh_token: refresh_token },
+            { new: true, validateModifiedOnly: true } // ✅ only validates changed fields
+        );
+
+        const cookie_options = {
+            httpOnly: false,          // ❌ JS can't access (prevents XSS)
+            secure: false,            // ✅ only over HTTPS
+            sameSite: "strict",      // prevents CSRF (use "lax" if mobile app)
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days expiry
+            path: "/api/v1/user/refresh-token", // only sent for refresh requests
+        }
+
+        return res.status(200).cookie("refresh-token", refresh_token, cookie_options).json({ Success: true, message: "Token Generated Successfully", access_token: access_token, refresh_token: refresh_token })
+
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expired' });
+        } else {
+            return res.status(500).json({ Success: false, message: "Internal Server Error" })
+
+        }
+    }
+}
+
+
+
+export const UploadProfileImage = async (req, res) => {
+    try {
+
+        console.log("user_id from middleware --->", req.user);
+        console.log("UploadProfileImage Value ---->", req.file);
+        // console.log("UploadProfileImage Value ---->", req.files);  
+        if (!req.file) {
+            return res.status(400).json({ Success: false, message: "File Not Found" })
+        }
+        const fileUploadResponse = await uploadOnCloudinar(req.file.path, `digital_salt_crud/user_profile/${req.user.email}`)
+        // console.log("fileUploadResponse -->", fileUploadResponse);
+        if (!fileUploadResponse.url) {
+            return res.status(500).json({ Success: false, message: "File Not Uploaded on Cloudinary" })
+        }
+
+        const responseData = await UserModel.findByIdAndUpdate(req.user._id, { profile_image: fileUploadResponse.url }, { new: true, validateModifiedOnly: true }).select("-password -refresh_token ");
+
+        return res.status(200).json({ Success: true, message: "Upload Profile Image", data: responseData })
+
+    } catch (error) {
+        return res.status(500).json({ Success: false, message: "Internal Server Error" })
     }
 }
